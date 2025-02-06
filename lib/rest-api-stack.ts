@@ -4,7 +4,6 @@ import * as lambda from "aws-cdk-lib/aws-lambda";
 import * as dynamodb from "aws-cdk-lib/aws-dynamodb";
 import * as custom from "aws-cdk-lib/custom-resources";
 import { Construct } from "constructs";
-// import * as sqs from 'aws-cdk-lib/aws-sqs';
 import { generateBatch } from "../shared/util";
 import { movies } from "../seed/movies";
 import * as apig from "aws-cdk-lib/aws-apigateway";
@@ -53,23 +52,6 @@ export class RestAPIStack extends cdk.Stack {
         },
       }
     );
-        
-    new custom.AwsCustomResource(this, "moviesddbInitData", {
-      onCreate: {
-        service: "DynamoDB",
-        action: "batchWriteItem",
-        parameters: {
-          RequestItems: {
-            [moviesTable.tableName]: generateBatch(movies),
-          },
-        },
-        physicalResourceId: custom.PhysicalResourceId.of("moviesddbInitData"), //.of(Date.now().toString()),
-      },
-      policy: custom.AwsCustomResourcePolicy.fromSdkCalls({
-        resources: [moviesTable.tableArn],
-      }),
-    });
-
 
     const newMovieFn = new lambdanode.NodejsFunction(this, "AddMovieFn", {
       architecture: lambda.Architecture.ARM_64,
@@ -83,11 +65,40 @@ export class RestAPIStack extends cdk.Stack {
       },
     });
 
+    // Add the new delete function
+    const deleteMovieFn = new lambdanode.NodejsFunction(this, "DeleteMovieFn", {
+      architecture: lambda.Architecture.ARM_64,
+      runtime: lambda.Runtime.NODEJS_18_X,
+      entry: `${__dirname}/../lambdas/deleteMovie.ts`,
+      timeout: cdk.Duration.seconds(10),
+      memorySize: 128,
+      environment: {
+        TABLE_NAME: moviesTable.tableName,
+        REGION: "eu-west-1",
+      },
+    });
+        
+    new custom.AwsCustomResource(this, "moviesddbInitData", {
+      onCreate: {
+        service: "DynamoDB",
+        action: "batchWriteItem",
+        parameters: {
+          RequestItems: {
+            [moviesTable.tableName]: generateBatch(movies),
+          },
+        },
+        physicalResourceId: custom.PhysicalResourceId.of("moviesddbInitData"),
+      },
+      policy: custom.AwsCustomResourcePolicy.fromSdkCalls({
+        resources: [moviesTable.tableArn],
+      }),
+    });
         
     // Permissions 
     moviesTable.grantReadData(getMovieByIdFn);
     moviesTable.grantReadData(getAllMoviesFn);
     moviesTable.grantReadWriteData(newMovieFn);
+    moviesTable.grantReadWriteData(deleteMovieFn);  // Add permission for delete
 
     // API Gateway
     const api = new apig.RestApi(this, "RestAPI", {
@@ -117,6 +128,12 @@ export class RestAPIStack extends cdk.Stack {
     moviesEndpoint.addMethod(
       "POST",
       new apig.LambdaIntegration(newMovieFn, { proxy: true })
+    );
+
+    // Add the DELETE method
+    movieEndpoint.addMethod(
+      "DELETE",
+      new apig.LambdaIntegration(deleteMovieFn, { proxy: true })
     );
   }
 }
