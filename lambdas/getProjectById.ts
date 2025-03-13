@@ -1,64 +1,69 @@
 import { APIGatewayProxyHandlerV2 } from "aws-lambda";
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
-import { DynamoDBDocumentClient, DeleteCommand } from "@aws-sdk/lib-dynamodb";
+import { DynamoDBDocumentClient, GetCommand } from "@aws-sdk/lib-dynamodb";
 
 const ddbDocClient = createDDbDocClient();
 
 export const handler: APIGatewayProxyHandlerV2 = async (event, context) => {
   try {
-    // Print Event
-    console.log("[EVENT]", JSON.stringify(event));
+    console.log("Event:", JSON.stringify(event));
     
-    // Check if movieId exists in path parameters
-    const movieId = event.pathParameters?.movieId;
+    // Extract path parameters
+    const userId = event.pathParameters?.userId;
+    const projectId = event.pathParameters?.projectId;
     
-    if (!movieId) {
+    if (!userId || !projectId) {
       return {
         statusCode: 400,
         headers: {
           "content-type": "application/json",
         },
-        body: JSON.stringify({ message: "Missing movie ID in path" }),
+        body: JSON.stringify({ message: "Missing required path parameters" }),
       };
     }
 
-    // Convert movieId to number since our table expects a number type
-    const movieIdNum = Number(movieId);
+    const params = {
+      TableName: process.env.TABLE_NAME,
+      Key: {
+        userId: userId,
+        projectId: projectId,
+      },
+    };
+
+    const commandOutput = await ddbDocClient.send(new GetCommand(params));
     
-    if (isNaN(movieIdNum)) {
+    if (!commandOutput.Item) {
       return {
-        statusCode: 400,
+        statusCode: 404,
         headers: {
           "content-type": "application/json",
         },
-        body: JSON.stringify({ message: "Movie ID must be a number" }),
+        body: JSON.stringify({ message: "Project not found" }),
       };
     }
-
-    const commandOutput = await ddbDocClient.send(
-      new DeleteCommand({
-        TableName: process.env.TABLE_NAME,
-        Key: {
-          id: movieIdNum,  // Changed from movieId to id to match table schema
-        },
-      })
-    );
 
     return {
       statusCode: 200,
       headers: {
         "content-type": "application/json",
       },
-      body: JSON.stringify({ message: "Movie deleted successfully" }),
+      body: JSON.stringify({
+        message: "Successfully retrieved project",
+        project: commandOutput.Item,
+      }),
     };
   } catch (error: any) {
-    console.log(JSON.stringify(error));
+    console.error("Error:", error);
     return {
       statusCode: 500,
       headers: {
         "content-type": "application/json",
       },
-      body: JSON.stringify({ error }),
+      body: JSON.stringify({
+        message: "Failed to retrieve project",
+        errorMsg: error.message,
+        errorStack: error.stack,
+      }),
     };
   }
 };
