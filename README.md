@@ -103,6 +103,21 @@ cdk deploy ProjectsStack
 cdk deploy --context useMultiStack=true --all
 ```
 
+### Seeding Data
+After deployment, you'll need to seed the database with sample projects:
+
+#### For Custom Construct deployment:
+```bash
+aws lambda invoke --function-name ProjectsStack-SeedProjectsFn --payload '{}' response.json
+```
+
+#### For Multi-Stack deployment:
+```bash
+aws lambda invoke --function-name ProjectsLambdaStack-SeedProjectsFn --payload '{}' response.json
+```
+
+This will populate your DynamoDB table with sample projects defined in `seed/projects.ts`.
+
 ## API Key Authentication
 
 Protected endpoints (POST, PUT, DELETE) require an API key in the request header:
