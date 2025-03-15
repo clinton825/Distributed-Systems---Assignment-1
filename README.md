@@ -77,6 +77,56 @@ The DynamoDB table has a composite key structure with a global secondary index:
 | DELETE | /projects/{userId}/{projectId} | Delete a project | API Key |
 | GET | /projects/{userId}/{projectId}/translate?language={lang} | Translate project description | No |
 
+
+**Example Request:**
+```
+GET /projects/user123
+```
+
+#### POST /projects
+
+Create a new project (requires API key).
+
+**Request Body:**
+```json
+{
+  "userId": "user123",
+  "projectId": "plan-2025-001",
+  "projectName": "Downtown Office Complex",
+  "projectDescription": "A 12-story office building with ground floor retail space",
+  "status": "approved",
+  "projectValue": 5000000,
+  "category": "commercial",
+  "location": "123 Main Street",
+  "applicationDate": "2025-01-15T00:00:00Z",
+  "decisionDate": "2025-02-10T00:00:00Z"
+}
+```
+
+#### PUT /projects/{userId}/{projectId}
+
+Update an existing project (requires API key).
+
+**Request Body:**
+```json
+{
+  "status": "in_progress",
+  "startDate": "2025-03-01T00:00:00Z"
+}
+```
+
+#### GET /projects/{userId}/{projectId}/translation?language=fr
+
+Get a project with its description translated to the specified language.
+
+**Query Parameters:**
+- `language` - Target language code (e.g., fr, es, de)
+
+
+#### DELETE | /projects/{userId}/{projectId} | Delete a project | 
+
+Delete a project from a specific  user uisng the project id
+
 ## Getting Started
 
 ### Prerequisites
