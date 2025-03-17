@@ -3,7 +3,9 @@ import * as lambdanode from "aws-cdk-lib/aws-lambda-nodejs";
 import * as lambda from "aws-cdk-lib/aws-lambda";
 import * as dynamodb from "aws-cdk-lib/aws-dynamodb";
 import * as iam from "aws-cdk-lib/aws-iam";
+import * as cr from "aws-cdk-lib/custom-resources";
 import { Construct } from "constructs";
+import { AutoSeedConstruct } from "./auto-seed-construct";
 
 // Create a shared Lambda layer for common utilities
 const createLambdaLayer = (scope: Construct, id: string) => {
@@ -17,6 +19,7 @@ const createLambdaLayer = (scope: Construct, id: string) => {
 export interface LambdaStackProps extends cdk.StackProps {
   projectsTable: dynamodb.Table;
   region?: string;
+  enableAutoSeed?: boolean;
 }
 
 export class LambdaStack extends cdk.Stack {
@@ -27,6 +30,7 @@ export class LambdaStack extends cdk.Stack {
     updateProjectFn: lambdanode.NodejsFunction;
     deleteProjectFn: lambdanode.NodejsFunction;
     translateProjectFn: lambdanode.NodejsFunction;
+    seedProjectsFn: lambdanode.NodejsFunction;
   };
 
   constructor(scope: Construct, id: string, props: LambdaStackProps) {
@@ -150,6 +154,24 @@ export class LambdaStack extends cdk.Stack {
     });
     translateProjectFn.addToRolePolicy(translatePolicy);
 
+    // Create Seed Projects Lambda function
+    const seedProjectsFn = new lambdanode.NodejsFunction(
+      this,
+      "SeedProjectsFn",
+      {
+        architecture: lambda.Architecture.ARM_64,
+        runtime: lambda.Runtime.NODEJS_18_X,
+        entry: `${__dirname}/../lambdas/seedProjects.ts`,
+        timeout: cdk.Duration.seconds(30),
+        memorySize: 256,
+        environment: {
+          TABLE_NAME: props.projectsTable.tableName,
+          REGION: region,
+        },
+        // layers: [utilsLayer],
+      }
+    );
+
     // Grant permissions to Lambda functions
     props.projectsTable.grantReadData(getProjectsByUserIdFn);
     props.projectsTable.grantReadData(getProjectByIdFn);
@@ -157,6 +179,7 @@ export class LambdaStack extends cdk.Stack {
     props.projectsTable.grantReadWriteData(updateProjectFn);
     props.projectsTable.grantReadWriteData(translateProjectFn);
     props.projectsTable.grantReadWriteData(deleteProjectFn);
+    props.projectsTable.grantReadWriteData(seedProjectsFn);
 
     // Export function names and ARNs
     new cdk.CfnOutput(this, "GetProjectsByUserIdFunctionArn", {
@@ -177,6 +200,13 @@ export class LambdaStack extends cdk.Stack {
       updateProjectFn,
       deleteProjectFn,
       translateProjectFn,
+      seedProjectsFn,
     };
+    
+    // Auto-seed the database if enabled (default is true)
+    const enableAutoSeed = props.enableAutoSeed !== false;
+    if (enableAutoSeed) {
+      new AutoSeedConstruct(this, 'AutoSeed', seedProjectsFn);
+    }
   }
 }

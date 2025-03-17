@@ -4,13 +4,16 @@ import * as lambda from "aws-cdk-lib/aws-lambda";
 import * as dynamodb from "aws-cdk-lib/aws-dynamodb";
 import * as apigateway from "aws-cdk-lib/aws-apigateway";
 import * as iam from "aws-cdk-lib/aws-iam";
+import * as cr from "aws-cdk-lib/custom-resources";
 import { Construct } from "constructs";
+import { AutoSeedConstruct } from "./auto-seed-construct";
 
 export interface ProjectsApiProps {
   tableName?: string;
   apiKeyName?: string;
   stageName?: string;
   region?: string;
+  enableAutoSeed?: boolean;
 }
 
 export class ProjectsApiConstruct extends Construct {
@@ -23,6 +26,7 @@ export class ProjectsApiConstruct extends Construct {
   public readonly updateProjectFn: lambdanode.NodejsFunction;
   public readonly deleteProjectFn: lambdanode.NodejsFunction;
   public readonly translateProjectFn: lambdanode.NodejsFunction;
+  public readonly seedProjectsFn: lambdanode.NodejsFunction;
 
   constructor(scope: Construct, id: string, props: ProjectsApiProps = {}) {
     super(scope, id);
@@ -156,6 +160,23 @@ export class ProjectsApiConstruct extends Construct {
       resources: ["*"]
     });
     this.translateProjectFn.addToRolePolicy(translatePolicy);
+    
+    // Create SeedProjects Lambda function
+    this.seedProjectsFn = new lambdanode.NodejsFunction(
+      this,
+      "SeedProjectsFn",
+      {
+        architecture: lambda.Architecture.ARM_64,
+        runtime: lambda.Runtime.NODEJS_18_X,
+        entry: `${__dirname}/../lambdas/seedProjects.ts`,
+        timeout: cdk.Duration.seconds(30),
+        memorySize: 256,
+        environment: {
+          TABLE_NAME: this.table.tableName,
+          REGION: region,
+        },
+      }
+    );
 
     // Grant permissions to Lambda functions
     this.table.grantReadData(this.getProjectsByUserIdFn);
@@ -164,6 +185,7 @@ export class ProjectsApiConstruct extends Construct {
     this.table.grantReadWriteData(this.updateProjectFn);
     this.table.grantReadWriteData(this.translateProjectFn);
     this.table.grantReadWriteData(this.deleteProjectFn);
+    this.table.grantReadWriteData(this.seedProjectsFn);
     
     // Create API Gateway
     this.api = new apigateway.RestApi(this, "ProjectsAPI", {
@@ -197,6 +219,12 @@ export class ProjectsApiConstruct extends Construct {
 
     // Set up API Gateway endpoints
     this.setupApiEndpoints();
+    
+    // Auto-seed the database if enabled (default is true)
+    const enableAutoSeed = props.enableAutoSeed !== false;
+    if (enableAutoSeed) {
+      new AutoSeedConstruct(this, 'AutoSeed', this.seedProjectsFn);
+    }
   }
 
   private setupApiEndpoints() {

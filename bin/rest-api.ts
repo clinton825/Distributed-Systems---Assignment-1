@@ -21,7 +21,8 @@ if (app.node.tryGetContext('useMultiStack') === 'true') {
   const lambdaStack = new LambdaStack(app, "ProjectsLambdaStack", {
     env: { region },
     projectsTable: databaseStack.table,
-    region
+    region,
+    enableAutoSeed: true  // Enable automatic seeding during deployment
   });
 
   // Create API stack with reference to lambda functions
@@ -44,6 +45,7 @@ else {
     tableName: "ProjectsTable",
     apiKeyName: "projects-api-key-v2",
     stageName: "dev",
-    region
+    region,
+    enableAutoSeed: true  // Enable automatic seeding during deployment
   });
 }
