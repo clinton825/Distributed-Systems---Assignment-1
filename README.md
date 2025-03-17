@@ -148,17 +148,23 @@ npm install
 cdk deploy ProjectsStack
 ```
 
+This deploys all resources in a single stack using the `ProjectsApiConstruct` and automatically seeds the database with sample projects.
+
 #### Option 2: Deploy using Multi-Stack Architecture
 ```bash
 cdk deploy --context useMultiStack=true --all
 ```
 
+This creates separate stacks for database, Lambda functions, and API Gateway, and automatically seeds the database with sample projects.
+
 ### Seeding Data
-After deployment, you'll need to seed the database with sample projects:
+The database is now automatically seeded with sample projects during deployment, so no manual action is required.
+
+If you need to reseed the database at any time (e.g., after clearing data), you can use these commands:
 
 #### For Custom Construct deployment:
 ```bash
-aws lambda invoke --function-name ProjectsStack-SeedProjectsFn --payload '{}' response.json
+aws lambda invoke --function-name ProjectsStack-ProjectsApiSeedProjectsFn --payload '{}' response.json
 ```
 
 #### For Multi-Stack deployment:
