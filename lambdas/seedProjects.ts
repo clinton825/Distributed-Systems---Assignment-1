@@ -1,25 +1,33 @@
+/**
+ * Seeds DynamoDB with project data during CloudFormation stack deployment
+ * 
+ * This Lambda is triggered by a Custom Resource and leverages AWS SDK v3
+ * to perform batch writes to DynamoDB in chunks (respecting DynamoDB's 25-item limit)
+ */
 import { CloudFormationCustomResourceEvent, CloudFormationCustomResourceResponse } from "aws-lambda";
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { DynamoDBDocumentClient, BatchWriteCommand } from "@aws-sdk/lib-dynamodb";
 import { projects } from "../seed/projects";
 
+// Initialize DynamoDB client with configured marshalling options
 const ddbDocClient = createDDbDocClient();
 
+/**
+ * Lambda handler for CloudFormation Custom Resource
+ * Handles Create/Update events by seeding data and Delete events by returning success
+ */
 export const handler = async (event: CloudFormationCustomResourceEvent): Promise<any> => {
   try {
     console.log("Event:", JSON.stringify(event));
     
-    // Only process Create and Update events
     if (event.RequestType === "Delete") {
       await sendResponse(event, "SUCCESS", { Message: "Delete request handled successfully" });
       return;
     }
     
-    // Prepare the items for batch write
     const tableName = process.env.TABLE_NAME;
     const batchItems: Array<{ PutRequest: { Item: any } }> = [];
     
-    // Add each project to the batch
     for (const project of projects) {
       batchItems.push({
         PutRequest: {
@@ -28,7 +36,7 @@ export const handler = async (event: CloudFormationCustomResourceEvent): Promise
       });
     }
     
-    // DynamoDB batch write can only process 25 items at a time
+    // Split into chunks of 25 items to respect DynamoDB batch write limits
     const batchChunks: Array<Array<{ PutRequest: { Item: any } }>> = [];
     for (let i = 0; i < batchItems.length; i += 25) {
       batchChunks.push(batchItems.slice(i, i + 25));
@@ -53,8 +61,13 @@ export const handler = async (event: CloudFormationCustomResourceEvent): Promise
   }
 };
 
+// Valid status values for CloudFormation Custom Resource responses
 type CloudFormationStatus = "SUCCESS" | "FAILED";
 
+/**
+ * Sends response back to CloudFormation
+ * CloudFormation Custom Resources require responses to be sent to a pre-signed URL
+ */
 async function sendResponse(event: CloudFormationCustomResourceEvent, status: CloudFormationStatus, data: any) {
   const responseBody: CloudFormationCustomResourceResponse = {
     Status: status,
@@ -99,6 +112,12 @@ async function sendResponse(event: CloudFormationCustomResourceEvent, status: Cl
   });
 }
 
+/**
+ * Creates a DynamoDB Document client with optimized marshalling options
+ * - Removes undefined values to prevent errors
+ * - Converts empty values for compatibility
+ * - Ensures proper number handling
+ */
 function createDDbDocClient() {
   const ddbClient = new DynamoDBClient({ region: process.env.REGION });
   const marshallOptions = {
