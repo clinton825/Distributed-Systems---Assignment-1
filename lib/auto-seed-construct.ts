@@ -4,23 +4,23 @@ import * as cr from 'aws-cdk-lib/custom-resources';
 import { Construct } from 'constructs';
 
 /**
- * A construct that triggers a Lambda function during stack deployment
- * Used to automatically seed the database with sample data
+ * A CDK construct that triggers a Lambda function during CloudFormation stack deployment
+ * 
+ * This construct uses CloudFormation Custom Resources to execute a seeding function
+ * exactly once during deployment. The timestamp property ensures the resource
+ * is updated on each deployment, forcing the Lambda to run each time.
  */
 export class AutoSeedConstruct extends Construct {
   constructor(scope: Construct, id: string, seedFunction: lambda.IFunction) {
     super(scope, id);
 
-    // Create a provider that will execute the seed Lambda
     const provider = new cr.Provider(this, 'Provider', {
       onEventHandler: seedFunction,
       logRetention: cdk.aws_logs.RetentionDays.ONE_DAY,
     });
 
-    // Create a custom resource that will trigger on deployment
     new cdk.CustomResource(this, 'SeedingResource', {
       serviceToken: provider.serviceToken,
-      // Adding a timestamp ensures this runs on every deployment
       properties: {
         timestamp: new Date().toISOString(),
       },

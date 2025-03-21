@@ -1,3 +1,7 @@
+/**
+ * Lambda handler for retrieving projects by userId with optional filtering
+ * Supports filtering by category (using GSI) and completion status
+ */
 import { APIGatewayProxyHandlerV2 } from "aws-lambda";
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { DynamoDBDocumentClient, QueryCommand } from "@aws-sdk/lib-dynamodb";
@@ -8,7 +12,6 @@ export const handler: APIGatewayProxyHandlerV2 = async (event, context) => {
   try {
     console.log("Event:", JSON.stringify(event));
     
-    // Extract path parameters
     const userId = event.pathParameters?.userId;
     
     if (!userId) {
@@ -21,13 +24,14 @@ export const handler: APIGatewayProxyHandlerV2 = async (event, context) => {
       };
     }
 
-    // Extract query parameters if any
+    // Extract query parameters for filtering
     const queryParams = event.queryStringParameters || {};
     const { category, completed } = queryParams;
     
     let params: any;
     
-    // If we have a category filter, use the CategoryIndex GSI
+    // If category is provided, use the CategoryIndex GSI for efficient filtering
+    // This leverages the composite key (userId, category) structure
     if (category) {
       params = {
         TableName: process.env.TABLE_NAME,
@@ -39,7 +43,7 @@ export const handler: APIGatewayProxyHandlerV2 = async (event, context) => {
         },
       };
     } else {
-      // Basic query for all user's projects
+      // Without category filter, use the base table with userId as the key
       params = {
         TableName: process.env.TABLE_NAME,
         KeyConditionExpression: "userId = :userId",
@@ -49,7 +53,8 @@ export const handler: APIGatewayProxyHandlerV2 = async (event, context) => {
       };
     }
     
-    // If we have a completed filter, add it as a filter expression
+    // Add an optional filter for completion status
+    // Note: This uses FilterExpression which applies after querying, so less efficient than the GSI approach
     if (completed !== undefined) {
       const isCompleted = completed === "true";
       params.FilterExpression = "completed = :completed";

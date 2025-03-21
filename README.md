@@ -11,7 +11,7 @@ This API provides endpoints for creating, retrieving, updating, deleting, and tr
 ## Features
 
 - **Project Management**: Create, read, update, and delete projects.
-- **Filtering**: Filter projects by category and completion status.
+- **Filtering**: Filter projects by category (10 diverse categories) and completion status.
 - **Security**: API key authentication for POST, PUT, and DELETE operations.
 - **Translation**: Translate project descriptions using Amazon Translate.
 - **Advanced Architecture**: Implements both custom constructs and a multi-stack approach.
@@ -55,7 +55,7 @@ The DynamoDB table has a composite key structure with a global secondary index:
 - `projectId`: Unique ID (auto-generated UUID).
 - `name`: Project name.
 - `description`: Detailed project description.
-- `category`: Project category.
+- `category`: Project category (Industrial, Commercial & Retail, Residential, Healthcare, Educational, Infrastructure, Mixed-Use, Recreation, Transportation, Sustainable/Green).
 - `startDate`: Project start date.
 - `endDate`: Project end date.
 - `budget`: Budget allocated.
@@ -158,7 +158,7 @@ cdk deploy --context useMultiStack=true --all
 This creates separate stacks for database, Lambda functions, and API Gateway, and automatically seeds the database with sample projects.
 
 ### Seeding Data
-The database is now automatically seeded with sample projects during deployment, so no manual action is required.
+The database is automatically seeded with sample projects (24 diverse projects across 10 categories) during deployment, so no manual action is required.
 
 If you need to reseed the database at any time (e.g., after clearing data), you can use these commands:
 

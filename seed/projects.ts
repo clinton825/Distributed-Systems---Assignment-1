@@ -1,6 +1,16 @@
-// Sample project data for seeding the Projects table
+/**
+ * Enhanced seed data for the Projects table
+ * 
+ * This data provides a diverse set of projects across multiple categories to showcase the API's
+ * filtering capabilities. The dataset includes projects with varied attributes like:
+ * - 10 different categories to demonstrate CategoryIndex filtering
+ * - Range of budgets, priorities, and completion statuses
+ * - Projects from different time periods
+ * - Diverse tags for potential tag-based searching
+ */
 
 export const projects = [
+  // Original projects
   {
     userId: "user1",
     projectId: "proj1",
@@ -90,5 +100,261 @@ export const projects = [
     tags: ["office", "multi-storey", "commercial", "landscaping"],
     createdAt: "2014-04-30",
     updatedAt: "2014-08-15"
+  },
+  
+  // New Residential projects
+  {
+    userId: "user1",
+    projectId: "proj4",
+    name: "Luxury Apartment Complex in Dublin",
+    description: "Development of a 6-storey luxury apartment building with 42 units, underground parking, rooftop garden, gym facilities, and concierge service in Dublin 2.",
+    category: "Residential",
+    startDate: "2020-03-15",
+    endDate: "2022-01-10",
+    budget: 14500000,
+    completed: true,
+    priority: 5,
+    tags: ["luxury", "apartments", "dublin", "rooftop-garden", "concierge"],
+    createdAt: "2019-08-23",
+    updatedAt: "2020-02-12"
+  },
+  {
+    userId: "user2",
+    projectId: "proj3",
+    name: "Affordable Housing Estate in Galway",
+    description: "Construction of 78 affordable housing units in Galway with community center, playground, and sustainable design elements including solar panels and rainwater harvesting systems.",
+    category: "Residential",
+    startDate: "2021-06-12",
+    endDate: "2023-08-30",
+    budget: 9800000,
+    completed: false,
+    priority: 4,
+    tags: ["affordable-housing", "community", "sustainable", "galway"],
+    createdAt: "2020-11-04",
+    updatedAt: "2021-05-17"
+  },
+  
+  // Healthcare projects
+  {
+    userId: "user3",
+    projectId: "proj2",
+    name: "Regional Hospital Extension",
+    description: "Construction of a new wing at Cork University Hospital including 120 additional beds, operating theatres, diagnostic imaging suite, and outpatient facilities.",
+    category: "Healthcare",
+    startDate: "2019-08-24",
+    endDate: "2022-02-28",
+    budget: 38500000,
+    completed: true,
+    priority: 5,
+    tags: ["hospital", "healthcare", "operating-theatres", "diagnostic-imaging"],
+    createdAt: "2018-11-13",
+    updatedAt: "2019-07-02"
+  },
+  {
+    userId: "user4",
+    projectId: "proj1",
+    name: "Primary Care Centre in Limerick",
+    description: "Development of a modern primary care facility providing GP services, community nursing, dental care, physiotherapy, and mental health services to serve the local population.",
+    category: "Healthcare",
+    startDate: "2022-01-17",
+    endDate: "2023-06-30",
+    budget: 12300000,
+    completed: false,
+    priority: 4,
+    tags: ["primary-care", "community-health", "mental-health", "limerick"],
+    createdAt: "2021-05-06",
+    updatedAt: "2021-12-14"
+  },
+  
+  // Educational projects
+  {
+    userId: "user4",
+    projectId: "proj2",
+    name: "University STEM Building",
+    description: "Construction of a state-of-the-art Science, Technology, Engineering and Mathematics building at Trinity College Dublin, featuring research laboratories, lecture halls, collaborative spaces, and advanced technology infrastructure.",
+    category: "Educational",
+    startDate: "2020-05-10",
+    endDate: "2022-09-15",
+    budget: 45000000,
+    completed: true,
+    priority: 5,
+    tags: ["university", "stem", "laboratories", "research", "trinity"],
+    createdAt: "2019-09-20",
+    updatedAt: "2020-04-12"
+  },
+  {
+    userId: "user5",
+    projectId: "proj1",
+    name: "Secondary School Renovation",
+    description: "Comprehensive renovation and extension of a secondary school in Kilkenny, including new classrooms, sports hall, library, canteen facilities, and energy efficiency improvements to the existing building.",
+    category: "Educational",
+    startDate: "2021-11-05",
+    endDate: "2023-08-20",
+    budget: 18700000,
+    completed: false,
+    priority: 4,
+    tags: ["school", "renovation", "extension", "energy-efficiency", "kilkenny"],
+    createdAt: "2020-08-12",
+    updatedAt: "2021-10-08"
+  },
+  
+  // Infrastructure projects
+  {
+    userId: "user5",
+    projectId: "proj2",
+    name: "Coastal Flood Defense System",
+    description: "Implementation of comprehensive coastal flood protection measures in Wexford, including sea walls, embankments, tidal barriers, and nature-based solutions to protect urban areas and critical infrastructure from rising sea levels and storm surges.",
+    category: "Infrastructure",
+    startDate: "2019-02-18",
+    endDate: "2022-11-30",
+    budget: 65000000,
+    completed: true,
+    priority: 5,
+    tags: ["flood-defense", "coastal", "climate-adaptation", "wexford"],
+    createdAt: "2018-05-11",
+    updatedAt: "2019-01-22"
+  },
+  {
+    userId: "user3",
+    projectId: "proj3",
+    name: "Rural Broadband Network",
+    description: "Deployment of high-speed fiber broadband infrastructure across rural communities in Counties Mayo and Sligo, connecting over 35,000 homes and businesses to gigabit internet services.",
+    category: "Infrastructure",
+    startDate: "2022-03-14",
+    endDate: "2024-12-31",
+    budget: 89000000,
+    completed: false,
+    priority: 5,
+    tags: ["broadband", "rural", "fiber", "connectivity", "mayo", "sligo"],
+    createdAt: "2021-07-19",
+    updatedAt: "2022-02-08"
+  },
+  
+  // Mixed-Use projects
+  {
+    userId: "user6",
+    projectId: "proj1",
+    name: "Waterfront Urban Regeneration",
+    description: "Transformation of a former docklands area in Waterford into a vibrant mixed-use district featuring apartments, offices, retail spaces, restaurants, cultural venues, and public parks along the riverside.",
+    category: "Mixed-Use",
+    startDate: "2020-10-12",
+    endDate: "2024-06-30",
+    budget: 120000000,
+    completed: false,
+    priority: 5,
+    tags: ["urban-regeneration", "waterfront", "docklands", "mixed-use", "waterford"],
+    createdAt: "2019-12-05",
+    updatedAt: "2020-09-18"
+  },
+  {
+    userId: "user6",
+    projectId: "proj2",
+    name: "Town Center Redevelopment",
+    description: "Comprehensive redevelopment of Naas town center, including refurbishment of historic buildings, creation of pedestrian-friendly streets, new retail units, residential apartments, and multi-story parking facilities.",
+    category: "Mixed-Use",
+    startDate: "2021-04-08",
+    endDate: "2023-12-15",
+    budget: 78500000,
+    completed: false,
+    priority: 4,
+    tags: ["town-center", "historic", "pedestrian", "retail", "residential", "naas"],
+    createdAt: "2020-06-22",
+    updatedAt: "2021-03-11"
+  },
+  
+  // Recreation projects
+  {
+    userId: "user7",
+    projectId: "proj1",
+    name: "Multi-Sport Complex",
+    description: "Development of a state-of-the-art sports complex in Athlone featuring indoor arena, swimming pool, fitness center, all-weather playing fields, athletics track, and spectator facilities to host regional and national competitions.",
+    category: "Recreation",
+    startDate: "2021-02-15",
+    endDate: "2023-04-22",
+    budget: 32000000,
+    completed: true,
+    priority: 4,
+    tags: ["sports", "swimming", "athletics", "fitness", "athlone"],
+    createdAt: "2020-05-19",
+    updatedAt: "2021-01-08"
+  },
+  {
+    userId: "user7",
+    projectId: "proj2",
+    name: "Urban Park Renovation",
+    description: "Comprehensive renovation of a historic city park in Cork, including restoration of Victorian gardens, new playground facilities, outdoor fitness equipment, walking trails, wildlife habitats, and sustainable water management systems.",
+    category: "Recreation",
+    startDate: "2022-09-05",
+    endDate: "2023-11-30",
+    budget: 14800000,
+    completed: false,
+    priority: 3,
+    tags: ["park", "historic", "playground", "wildlife", "sustainability", "cork"],
+    createdAt: "2021-11-23",
+    updatedAt: "2022-08-14"
+  },
+  
+  // Transportation projects
+  {
+    userId: "user8",
+    projectId: "proj1",
+    name: "Light Rail Extension",
+    description: "Extension of Dublin's Luas light rail system to connect southern suburbs, including construction of 12 new stations, track infrastructure, depots, bridge crossings, and integration with existing public transport networks.",
+    category: "Transportation",
+    startDate: "2020-06-22",
+    endDate: "2024-08-31",
+    budget: 175000000,
+    completed: false,
+    priority: 5,
+    tags: ["light-rail", "luas", "public-transport", "infrastructure", "dublin"],
+    createdAt: "2019-08-15",
+    updatedAt: "2020-05-29"
+  },
+  {
+    userId: "user8",
+    projectId: "proj2",
+    name: "Regional Airport Upgrade",
+    description: "Expansion and modernization of Kerry Airport, including terminal building extension, runway improvements, enhanced security systems, upgraded passenger facilities, and new cargo handling capabilities.",
+    category: "Transportation",
+    startDate: "2021-08-10",
+    endDate: "2023-07-28",
+    budget: 46500000,
+    completed: true,
+    priority: 4,
+    tags: ["airport", "runway", "terminal", "security", "kerry"],
+    createdAt: "2020-10-07",
+    updatedAt: "2021-07-21"
+  },
+  
+  // Sustainable/Green projects
+  {
+    userId: "user9",
+    projectId: "proj1",
+    name: "Offshore Wind Farm",
+    description: "Development of a 400MW offshore wind farm in the Irish Sea, including turbine installation, submarine cable networks, onshore substation, and grid connection infrastructure to provide renewable energy for approximately 300,000 homes.",
+    category: "Sustainable/Green",
+    startDate: "2019-11-08",
+    endDate: "2023-10-15",
+    budget: 950000000,
+    completed: false,
+    priority: 5,
+    tags: ["wind-farm", "offshore", "renewable", "energy", "irish-sea"],
+    createdAt: "2018-09-20",
+    updatedAt: "2019-10-14"
+  },
+  {
+    userId: "user9",
+    projectId: "proj2",
+    name: "Net Zero Office Campus",
+    description: "Construction of a carbon-neutral office campus in Galway featuring passive design, on-site renewable energy generation, rainwater harvesting, vertical gardens, and innovative waste management systems. The development aims to achieve LEED Platinum and BREEAM Outstanding certifications.",
+    category: "Sustainable/Green",
+    startDate: "2022-02-20",
+    endDate: "2024-05-31",
+    budget: 85000000,
+    completed: false,
+    priority: 4,
+    tags: ["carbon-neutral", "office", "leed", "breeam", "renewable", "galway"],
+    createdAt: "2021-04-16",
+    updatedAt: "2022-01-12"
   }
 ];
