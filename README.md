@@ -1,203 +1,138 @@
-# Project Info API - Distributed System Assignment 1
-A serverless REST API for managing projects, built using AWS CDK with TypeScript.
+# Serverless REST Assignment - Distributed Systems.
 
-## 🌟 Overview
+__Name:__ Clinton Bempah (20097793)
 
-This API provides endpoints for creating, retrieving, updating, deleting, and translating project data using a flexible architecture that demonstrates two advanced AWS CDK patterns: custom constructs and multi-stack deployments.
+__Demo:__ [Link to YouTube demonstration]
 
-**Developed by:** Clinton Bempah  
-**Student ID:** 20097793  
+### Context.
 
-## Features
+Context: Project Management
 
-- **Project Management**: Create, read, update, and delete projects.
-- **Filtering**: Filter projects by category (10 diverse categories) and completion status.
-- **Security**: API key authentication for POST, PUT, and DELETE operations.
-- **Translation**: Translate project descriptions using Amazon Translate.
-- **Advanced Architecture**: Implements both custom constructs and a multi-stack approach.
+Table item attributes:
++ userId - string (Partition key)
++ projectId - string (Sort Key)
++ name - string
++ description - string
++ category - string
++ startDate - string
++ endDate - string
++ budget - number
++ completed - boolean
++ priority - string
++ tags - List<string>
++ createdAt - string
++ updatedAt - string
++ translations - Map<string, string> (Optional)
 
-## Architecture
+### App API endpoints.
 
-### 1. Custom Construct Pattern
++ GET /projects/{userId} - Get all projects for a user
++ GET /projects/{userId}?category={category}&completed={true/false} - Filter projects by category and completion status
++ GET /projects/{userId}/{projectId} - Get a specific project by ID
++ POST /projects - Create a new project.
++ PUT /projects/{userId}/{projectId} - Update an existing project.
++ DELETE /projects/{userId}/{projectId} - Delete a project.
++ GET /projects/{userId}/{projectId}/translate?language={lang} - Translate project description to specified language
 
-A reusable `ProjectsApiConstruct` encapsulates:
-- DynamoDB table for project storage.
-- Lambda functions for all operations.
-- API Gateway with endpoints and method configurations.
-- API Key authentication for secured operations.
+### Features.
 
-### 2. Multi-Stack Pattern
+#### Translation persistence 
 
-The application is divided into three separate stacks:
-- **DatabaseStack**: Contains DynamoDB resources.
-- **LambdaStack**: Contains Lambda functions with database references.
-- **ApiStack**: Contains API Gateway with Lambda references.
+When a project description is translated via the translate endpoint, the translation is stored in the project's DynamoDB item under a 'translations' map attribute. Each translation is stored with the language code as the key and the translated text as the value. This allows for quick retrieval of previously translated content without calling the Amazon Translate service repeatedly for the same language.
 
-### AWS Services Used
+Example structure of a project item with translations:
 
-- **AWS CDK**: Infrastructure as Code.
-- **AWS Lambda**: Serverless compute functions.
-- **Amazon DynamoDB**: NoSQL database for project storage.
-- **Amazon API Gateway**: REST API endpoints.
-- **Amazon Translate**: Machine translation for project descriptions.
++ userId - string (Partition key)
++ projectId - string (Sort Key)
++ name - string
++ description - string (original language)
++ category - string
++ translations - Map<string, string>
+  + "fr": "[French translation of the description]"
+  + "es": "[Spanish translation of the description]"
+  + "de": "[German translation of the description]"
 
-## Database Design
+#### Custom L2 Construct (completed)
 
-The DynamoDB table has a composite key structure with a global secondary index:
+The custom L2 construct (`ProjectsApiConstruct`) provisions all necessary infrastructure for the projects API including: DynamoDB table, Lambda functions, API Gateway with endpoints, and API key authentication.
 
-- **Partition Key**: `userId` (Identifies project owner)
-- **Sort Key**: `projectId` (Unique project identifier)
-- **GSI**: `CategoryIndex` (For querying projects by category)
-
-### Project Attributes
-
-- `userId`: Owner of the project.
-- `projectId`: Unique ID (auto-generated UUID).
-- `name`: Project name.
-- `description`: Detailed project description.
-- `category`: Project category (Industrial, Commercial & Retail, Residential, Healthcare, Educational, Infrastructure, Mixed-Use, Recreation, Transportation, Sustainable/Green).
-- `startDate`: Project start date.
-- `endDate`: Project end date.
-- `budget`: Budget allocated.
-- `completed`: Boolean flag for completion status.
-- `priority`: Priority level.
-- `tags`: Array of associated tags.
-- `createdAt`: Timestamp when created.
-- `updatedAt`: Timestamp when last updated.
-
-## API Endpoints
-
-| Method | Endpoint | Description | Authentication |
-|--------|----------|-------------|----------------|
-| GET | /projects/{userId} | Get all projects for a user | No |
-| GET | /projects/{userId}?category={category}&completed={true/false} | Filter projects | No |
-| GET | /projects/{userId}/{projectId} | Get a specific project | No |
-| POST | /projects | Create a new project | API Key |
-| PUT | /projects/{userId}/{projectId} | Update a project | API Key |
-| DELETE | /projects/{userId}/{projectId} | Delete a project | API Key |
-| GET | /projects/{userId}/{projectId}/translate?language={lang} | Translate project description | No |
-
-
-**Example Request:**
-```
-GET /projects/user123
-```
-
-#### POST /projects
-
-Create a new project (requires API key).
-
-**Request Body:**
-```json
-{
-  "userId": "user123",
-  "projectId": "plan-2025-001",
-  "projectName": "Downtown Office Complex",
-  "projectDescription": "A 12-story office building with ground floor retail space",
-  "status": "approved",
-  "projectValue": 5000000,
-  "category": "commercial",
-  "location": "123 Main Street",
-  "applicationDate": "2025-01-15T00:00:00Z",
-  "decisionDate": "2025-02-10T00:00:00Z"
+Construct Input props object:
+~~~ts
+export interface ProjectsApiProps {
+  tableName?: string;
+  apiKeyName?: string;
+  stageName?: string;
+  region?: string;
+  enableAutoSeed?: boolean;
 }
-```
+~~~
 
-#### PUT /projects/{userId}/{projectId}
-
-Update an existing project (requires API key).
-
-**Request Body:**
-```json
-{
-  "status": "in_progress",
-  "startDate": "2025-03-01T00:00:00Z"
+Construct public properties:
+~~~ts
+export class ProjectsApiConstruct extends Construct {
+  public readonly api: apigateway.RestApi;
+  public readonly table: dynamodb.Table;
+  public readonly apiKey: apigateway.ApiKey;
+  public readonly getProjectsByUserIdFn: lambdanode.NodejsFunction;
+  public readonly getProjectByIdFn: lambdanode.NodejsFunction;
+  public readonly addProjectFn: lambdanode.NodejsFunction;
+  public readonly updateProjectFn: lambdanode.NodejsFunction;
+  public readonly deleteProjectFn: lambdanode.NodejsFunction;
+  public readonly translateProjectFn: lambdanode.NodejsFunction;
+  public readonly seedProjectsFn: lambdanode.NodejsFunction;
 }
-```
+~~~
 
-#### GET /projects/{userId}/{projectId}/translation?language=fr
+#### Multi-Stack app (completed)
 
-Get a project with its description translated to the specified language.
+The application can be deployed using a multi-stack architecture which separates concerns into three independent stacks:
 
-**Query Parameters:**
-- `language` - Target language code (e.g., fr, es, de)
+1. **DatabaseStack**: Contains the DynamoDB table with the appropriate partition key, sort key, and global secondary index configurations
+2. **LambdaStack**: Contains all Lambda functions needed for CRUD operations and translation, with references to the database resources
+3. **ApiStack**: Contains the API Gateway configuration with endpoints, methods, and API key setup, with references to the Lambda functions
+
+This architecture allows for more granular control over deployments and updates, as well as better separation of concerns.
 
 
-#### DELETE | /projects/{userId}/{projectId} | Delete a project | 
+#### API Keys. (completed)
 
-Delete a project from a specific  user uisng the project id
+The application implements API key authentication to protect sensitive endpoints (POST, PUT, DELETE) from unauthorized access. This is done by creating an API key in API Gateway and requiring it for specific methods.
 
-## Getting Started
-
-### Prerequisites
-
-- Node.js and npm
-- AWS CDK toolkit
-- AWS CLI configured with credentials
-
-### Installation
-
-```bash
-npm install
-```
-
-### Deployment Options
-
-#### Option 1: Deploy using Custom Construct (default)
-```bash
-cdk deploy ProjectsStack
-```
-
-This deploys all resources in a single stack using the `ProjectsApiConstruct` and automatically seeds the database with sample projects.
-
-#### Option 2: Deploy using Multi-Stack Architecture
-```bash
-cdk deploy --context useMultiStack=true --all
-```
-
-This creates separate stacks for database, Lambda functions, and API Gateway, and automatically seeds the database with sample projects.
-
-### Seeding Data
-The database is automatically seeded with sample projects (24 diverse projects across 10 categories) during deployment, so no manual action is required.
-
-If you need to reseed the database at any time (e.g., after clearing data), you can use these commands:
-
-#### For Custom Construct deployment:
-```bash
-aws lambda invoke --function-name ProjectsStack-ProjectsApiSeedProjectsFn --payload '{}' response.json
-```
-
-#### For Multi-Stack deployment:
-```bash
-aws lambda invoke --function-name ProjectsLambdaStack-SeedProjectsFn --payload '{}' response.json
-```
-
-This will populate your DynamoDB table with sample projects defined in `seed/projects.ts`.
-
-## API Key Authentication
-
-Protected endpoints (POST, PUT, DELETE) require an API key in the request header:
-
-```
-x-api-key: YOUR_API_KEY
-```
-
-## Implementation Notes
-
-### Custom Construct Implementation
-
-The custom construct encapsulates all resources needed for the API:
-
-```typescript
-new ProjectsApiConstruct(stack, "ProjectsApi", {
-  tableName: "ProjectsTable",
-  apiKeyName: "projects-api-key-v2",
-  stageName: "dev",
-  region: "eu-west-1"
+~~~ts
+// Create API key
+this.apiKey = new apigateway.ApiKey(this, "ProjectsApiKey", {
+  apiKeyName: props.apiKeyName || "projects-api-key-v2",
+  description: "API Key for POST and PUT operations",
+  enabled: true,
 });
-```
 
-### Multi-Stack Implementation
+// API Usage Plan with API Key
+const usagePlan = this.api.addUsagePlan("ProjectsApiUsagePlan", {
+  name: "ProjectsApiUsagePlan",
+  throttle: {
+    rateLimit: 10,
+    burstLimit: 5,
+  },
+});
+
+usagePlan.addApiStage({
+  stage: this.api.deploymentStage,
+});
+
+// Associate the API key with the usage plan
+usagePlan.addApiKey(this.apiKey);
+
+// Requiring API key for specific methods
+projectsResource.addMethod(
+  "POST",
+  new apigateway.LambdaIntegration(this.addProjectFn, { proxy: true }),
+  { apiKeyRequired: true } // API key required for POST operations
+);
+~~~
+
+###  Extra 
+
+The project includes an extensive seed data function that populates the DynamoDB table with 24 diverse projects across 10 different categories (Industrial, Commercial & Retail, Residential, Healthcare, Educational, Infrastructure, Mixed-Use, Recreation, Transportation, Sustainable/Green), providing a comprehensive dataset for testing and demonstration purposes.
 
 The multi-stack approach separates concerns into discrete stacks:
 

@@ -8,7 +8,6 @@ export const handler: APIGatewayProxyHandlerV2 = async (event, context) => {
   try {
     console.log("Event:", JSON.stringify(event));
     
-    // Extract path parameters
     const userId = event.pathParameters?.userId;
     const projectId = event.pathParameters?.projectId;
     

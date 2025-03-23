@@ -10,7 +10,6 @@ export const handler: APIGatewayProxyHandlerV2 = async (event, context) => {
   try {
     console.log("Event:", JSON.stringify(event));
     
-    // Extract path parameters
     const userId = event.pathParameters?.userId;
     const projectId = event.pathParameters?.projectId;
     
@@ -24,7 +23,6 @@ export const handler: APIGatewayProxyHandlerV2 = async (event, context) => {
       };
     }
     
-    // Get the target language from query parameters
     const targetLanguage = event.queryStringParameters?.targetLanguage;
     
     if (!targetLanguage) {
@@ -37,7 +35,6 @@ export const handler: APIGatewayProxyHandlerV2 = async (event, context) => {
       };
     }
     
-    // First, get the project details
     const getParams = {
       TableName: process.env.TABLE_NAME,
       Key: {
@@ -60,7 +57,6 @@ export const handler: APIGatewayProxyHandlerV2 = async (event, context) => {
     
     const project = getResult.Item;
     
-    // Check if the translation for this language already exists
     if (project.translations && project.translations[targetLanguage]) {
       return {
         statusCode: 200,
@@ -77,7 +73,6 @@ export const handler: APIGatewayProxyHandlerV2 = async (event, context) => {
       };
     }
     
-    // Call Amazon Translate to translate the description
     const translateParams = {
       Text: project.description,
       SourceLanguageCode: "en", // Assuming the source is English
@@ -87,7 +82,6 @@ export const handler: APIGatewayProxyHandlerV2 = async (event, context) => {
     const translateResult = await translateClient.send(new TranslateTextCommand(translateParams));
     const translatedText = translateResult.TranslatedText;
     
-    // Update the project with the new translation
     const translations = project.translations || {};
     translations[targetLanguage] = translatedText;
     

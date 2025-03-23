@@ -1,13 +1,3 @@
-/**
- * Enhanced seed data for the Projects table
- * 
- * This data provides a diverse set of projects across multiple categories to showcase the API's
- * filtering capabilities. The dataset includes projects with varied attributes like:
- * - 10 different categories to demonstrate CategoryIndex filtering
- * - Range of budgets, priorities, and completion statuses
- * - Projects from different time periods
- * - Diverse tags for potential tag-based searching
- */
 
 export const projects = [
   // Original projects

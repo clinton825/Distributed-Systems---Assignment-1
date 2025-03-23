@@ -8,7 +8,6 @@ export const handler: APIGatewayProxyHandlerV2 = async (event, context) => {
   try {
     console.log("Event:", event);
     
-    // Get userId and projectId from path parameters
     const userId = event.pathParameters?.userId;
     const projectId = event.pathParameters?.projectId;
 
@@ -30,7 +29,6 @@ export const handler: APIGatewayProxyHandlerV2 = async (event, context) => {
         userId: userId,
         projectId: projectId,
       },
-      // Ensure the item exists before deleting
       ConditionExpression: "attribute_exists(userId) AND attribute_exists(projectId)",
     };
 

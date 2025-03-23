@@ -9,7 +9,6 @@ export const handler: APIGatewayProxyHandlerV2 = async (event, context) => {
   try {
     console.log("Event:", JSON.stringify(event));
     
-    // Additional debugging info about the body
     console.log("Body type:", typeof event.body);
     console.log("Body value:", event.body);
     console.log("Body length:", event.body ? event.body.length : 0);
@@ -37,10 +36,8 @@ export const handler: APIGatewayProxyHandlerV2 = async (event, context) => {
       };
     }
 
-    // Parse the request body
     const requestBody = JSON.parse(event.body);
     
-    // Validate required fields
     const requiredFields = ["userId", "name", "description", "category", "startDate", "endDate", "budget", "priority"];
     for (const field of requiredFields) {
       if (!requestBody[field]) {
@@ -54,13 +51,10 @@ export const handler: APIGatewayProxyHandlerV2 = async (event, context) => {
       }
     }
 
-    // Generate a unique project ID if not provided
     const projectId = requestBody.projectId || uuidv4();
     
-    // Prepare timestamp fields
     const timestamp = new Date().toISOString();
     
-    // Create the project item
     const project = {
       userId: requestBody.userId,
       projectId: projectId,
@@ -99,7 +93,6 @@ export const handler: APIGatewayProxyHandlerV2 = async (event, context) => {
   } catch (error: any) {
     console.error("Error:", error);
     
-    // Handle conditional check failure (project already exists)
     if (error.name === "ConditionalCheckFailedException") {
       return {
         statusCode: 409,
