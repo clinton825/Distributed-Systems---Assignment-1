@@ -8,7 +8,6 @@ export const handler: APIGatewayProxyHandlerV2 = async (event, context) => {
   try {
     console.log("Event:", JSON.stringify(event));
     
-    // Extract path parameters
     const userId = event.pathParameters?.userId;
     const projectId = event.pathParameters?.projectId;
     
@@ -22,14 +21,12 @@ export const handler: APIGatewayProxyHandlerV2 = async (event, context) => {
       };
     }
     
-    // Additional debugging info about the body
     console.log("Body type:", typeof event.body);
     console.log("Body value:", event.body);
     console.log("Body length:", event.body ? event.body.length : 0);
     console.log("Headers:", event.headers);
     console.log("Content-Type header:", event.headers && event.headers['content-type']);
     
-    // Check if body exists and has content
     if (!event.body || event.body === '""' || event.body === '' || event.body === '{}') {
       return {
         statusCode: 400,
@@ -45,7 +42,6 @@ export const handler: APIGatewayProxyHandlerV2 = async (event, context) => {
       };
     }
 
-    // Parse the request body
     let requestBody;
     try {
       requestBody = JSON.parse(event.body);
@@ -65,7 +61,6 @@ export const handler: APIGatewayProxyHandlerV2 = async (event, context) => {
       };
     }
     
-    // First, check if the project exists
     const getParams = {
       TableName: process.env.TABLE_NAME,
       Key: {
@@ -86,23 +81,19 @@ export const handler: APIGatewayProxyHandlerV2 = async (event, context) => {
       };
     }
     
-    // Prepare update expressions and attribute values
     let updateExpression = "set updatedAt = :updatedAt";
     const expressionAttributeValues: any = {
       ":updatedAt": new Date().toISOString(),
     };
-    // Initialize expression attribute names to handle reserved keywords
     const expressionAttributeNames: any = {
       "#updatedAt": "updatedAt"
     };
     
-    // Define updateable fields
     const updateableFields = [
       "name", "description", "category", "startDate", "endDate", 
       "budget", "completed", "priority", "tags"
     ];
     
-    // Build the update expression for each field in the request body
     let updateCount = 0;
     for (const field of updateableFields) {
       if (requestBody[field] !== undefined) {
