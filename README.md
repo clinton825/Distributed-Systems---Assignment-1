@@ -93,59 +93,6 @@ The application can be deployed using a multi-stack architecture which separates
 
 This architecture allows for more granular control over deployments and updates, as well as better separation of concerns.
 
-```mermaid
-graph TD
-    subgraph "AWS Cloud"
-        subgraph "ProjectsDatabaseStack"
-            DynamoDB[DynamoDB Table<br/>Projects]
-            GSI[Global Secondary Index<br/>CategoryIndex]
-        end
-
-        subgraph "ProjectsLambdaStack"
-            LambdaGetById[Lambda<br/>GetProjectById]
-            LambdaGetByUser[Lambda<br/>GetProjectsByUserId]
-            LambdaAdd[Lambda<br/>AddProject]
-            LambdaUpdate[Lambda<br/>UpdateProject]
-            LambdaDelete[Lambda<br/>DeleteProject]
-            LambdaTranslate[Lambda<br/>TranslateProject]
-            LambdaSeed[Lambda<br/>SeedProjects]
-        end
-
-        subgraph "ProjectsApiStack"
-            APIGateway[API Gateway<br/>REST API]
-            ApiKey[API Key<br/>Authentication]
-            UsagePlan[Usage Plan]
-        end
-
-        %% Database connections
-        DynamoDB --- GSI
-        
-        %% Lambda to DynamoDB permissions
-        DynamoDB -.-> LambdaGetById
-        DynamoDB -.-> LambdaGetByUser
-        DynamoDB <-.-> LambdaAdd
-        DynamoDB <-.-> LambdaUpdate
-        DynamoDB <-.-> LambdaDelete
-        DynamoDB <-.-> LambdaTranslate
-        DynamoDB <-.-> LambdaSeed
-        
-        %% API Gateway to Lambda integrations
-        APIGateway --> LambdaGetById
-        APIGateway --> LambdaGetByUser
-        APIGateway --> LambdaAdd
-        APIGateway --> LambdaUpdate
-        APIGateway --> LambdaDelete
-        APIGateway --> LambdaTranslate
-        
-        %% API Key setup
-        ApiKey --> UsagePlan
-        UsagePlan --> APIGateway
-    end
-
-    %% External connections
-    User((Client)) --> APIGateway
-```
-
 
 #### API Keys. (completed)
 
